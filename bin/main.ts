@@ -1,8 +1,6 @@
 import * as fs from "fs/promises";
-import * as http from "http";
 import express from "express";
 import morgan from "morgan";
-import assert from "assert";
 import { v4 as uuidv4 } from "uuid";
 import {promisify} from "util";
 import {exec} from "child_process";
@@ -15,7 +13,6 @@ import * as Logging from "../src/logging";
 // Initialize the logging system here to allow imports to use it
 Logging.configure(CommandLine.argv);
 
-import * as Settings from "../src/settings";
 import { Router, CreateOptions } from "../src/router";
 import { postWithTimeout } from "../src/fetchWithTimeout";
 
@@ -39,7 +36,7 @@ async function main(): Promise<void> {
   }
 
   try {
-    await fs.mkdir(Settings.logDir);
+    await fs.mkdir(CommandLine.argv.logs);
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== "EEXIST") {
       throw err;
@@ -51,24 +48,19 @@ async function main(): Promise<void> {
 
   const startTime = new Date().getTime();
 
+  let data = await require('../src/graphics.js').graphics();
+
   var currentControllers: any[];
-
-  const startupGraphics = require('../src/graphics.js').graphics;
-
-  let data = await startupGraphics();
-
   currentControllers = data.controllers;
 
-  let app = express();
-
+  const app = express();
   app.use(morgan("combined"));
-
+  app.use(express.json());
   app.use(
     express.urlencoded({
       extended: true,
     })
   );
-  app.use(express.json());
 
   const router = new Router(CommandLine.argv.launcher);
 
@@ -196,16 +188,8 @@ async function main(): Promise<void> {
     process.exit(0);
   });
 
-  // Start the http servers
-  const listener = await http.createServer(app);
-
-  // Default to an epheral port, but allow it to be overridden
-  listener.listen(CommandLine.argv.port, async () => {
-    const addr = listener.address();
-
-    // Not sure of a better way to do this
-    assert(addr && typeof addr !== "string");
-    console.log(`listening on ${addr.address}:${addr.port}`);
+  app.listen(CommandLine.argv.port, CommandLine.argv.ip, async () => {
+    console.log(`Listening at http://${CommandLine.argv.ip}:${CommandLine.argv.port}`);
 
     // Start gpu status broadcast
     var dgram = require("dgram");

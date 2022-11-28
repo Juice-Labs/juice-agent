@@ -12,7 +12,9 @@ export type Options = {
   influxConfig?: string;
   maxClients?: number;
   roundrobin: boolean;
-  timeout: number
+  timeout: number;
+
+  logs: string;
 };
 
 var argsParser = require("yargs/yargs")(process.argv.slice(2))
@@ -50,7 +52,8 @@ var argsParser = require("yargs/yargs")(process.argv.slice(2))
   .option("port", {
     alias: "p",
     description: "Port to bind",
-    type: "number"
+    type: "number",
+    default: 43210
   })
   .option("launcher", {
     description: "Specifies the path to the binary to launch",
@@ -66,6 +69,11 @@ var argsParser = require("yargs/yargs")(process.argv.slice(2))
     description: "maximum timeout waiting for Renderer_Win to start, default 1000ms",
     type: "number",
     default: 5000
+  })
+  .option("logs", {
+    description: "Log directory",
+    type: "string",
+    default: "logs",
   })
   .help()
   .alias("help", "h").argv;
