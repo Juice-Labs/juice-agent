@@ -1,12 +1,17 @@
 {
     "name": "juice_agent",
     "displayName": "Juice Agent",
+    "repository": "github:Juice-Labs/juice-agent",
+    "bugs": {
+        "url": "https://github.com/Juice-Labs/juice-agent/issues"
+    },
     "version": "0.1.0",
     "engines": {
         "node": "^16.0.0"
     },
+    "license": "MIT",
     "scripts": {
-        "agent": "--launcher Renderer_Win --port 43210 -- ",
+        "start": "node ./dist/bin/main.js --launcher Renderer_Win --port 43210 -- ",
         "build": "tsc --build",
         "clean": "tsc --build --clean",
         "test": "jest -i --detectOpenHandles"
